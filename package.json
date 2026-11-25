@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "node -e \"console.log('test:e2e belum tersedia')\"",
     "test:a11y": "node -e \"console.log('test:a11y belum tersedia')\"",
