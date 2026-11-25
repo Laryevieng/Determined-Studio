@@ -1,0 +1,3151 @@
+PROMPTING STRUKTUR: SISTEM SCM INTERNAL DETERMINED STUDIO
+Edisi 3.0 | 4 November 2026 | 53 prompt berurutan + 7 prompt khusus
+Pasangan dokumen: PROJECT_PLAN.md (salin ke docs/PROJECT_PLAN.md di repositori)
+Stack: Next.js 16, React 19, TypeScript, Tailwind 4, Supabase (Postgres, Auth, RLS, Storage)
+Warna merek: #A678B9 (20%), #8CA9BC (40%), #8B7CC7 (40%)
+Lini produk: kaos sablon, kemeja korsa, PDH, PDL
+Filter UI & kode: antislop v3.2.32 (miqdadbadjuber/anti-slop) di .agents/skills/ dan AGENTS.md (§7.13, D-29)
+
+========================================================================
+CARA PAKAI (BACA SEKALI)
+========================================================================
+1. Kirim prompt SATU PER SATU, berurutan, ke AI coding agent (Claude Code, Cursor, atau sejenisnya).
+   Jangan kirim prompt berikutnya sebelum Anda membaca laporan prompt sebelumnya.
+2. Salin hanya teks di antara ">>> SALIN DARI SINI <<<" dan ">>> AKHIR PROMPT <<<".
+3. Teks "LANGKAH PEMILIK" adalah pekerjaan Anda di luar agent (membuat project Supabase, hosting, mengisi
+   data nyata). Lakukan sebelum mengirim prompt yang ditunjuk.
+4. "CEK MANUAL UNTUK PEMILIK" adalah cara Anda memeriksa hasil dengan mata sendiri setelah agent melapor.
+5. Bila hasil prompt sudah Anda setujui, awali prompt berikutnya dengan /1allclear. Agent lalu menandai
+   prompt sebelumnya DISETUJUI di Ledger (PROJECT_PLAN.md Lampiran E). Tanpa itu, agent berhenti dan bertanya.
+6. "GERBANG FASE" adalah pemeriksaan akhir fase. Jangan lanjut ke fase berikutnya bila gerbang belum lolos.
+7. Bila agent gagal, gunakan PROMPT KHUSUS A (perbaikan). Bila kuota habis, PROMPT KHUSUS B (lanjutkan).
+   Bila build rusak, PROMPT KHUSUS C. Bila ragu posisi pekerjaan, PROMPT KHUSUS D (status).
+8. JANGAN pernah menempelkan kunci rahasia (service role, kata sandi database) ke chat. Simpan di
+   .env.local di mesin Anda.
+9. PROJECT_PLAN.md berisi ISI (aturan, skema SQL yang sudah diuji, daftar task). Berkas ini berisi PERINTAH.
+   Bila keduanya berbeda, PROJECT_PLAN.md menang.
+10. Sistem ini akan dipakai sungguhan. Jangan mengisi data usaha dengan angka karangan. Bila agent meminta
+    angka (kebutuhan kain per potong, rekening, batas stok), jawablah dari data nyata atau biarkan
+    TODO(pemilik).
+11. Filter antislop v3.2.32 sudah terpasang di .agents/skills/ dan dirujuk dari AGENTS.md (clone sumber di
+    anti-slop/). Gunakan mode during saat mengerjakan prompt UI, copy, aksesibilitas, mobile, dan kode agar
+    slop dicegah sejak awal, atau gunakan PROMPT KHUSUS G (mode after) untuk audit hasil yang sudah jadi.
+    Arah desain tetap dari PROJECT_PLAN.md §7; bila ada benturan aturan, §0.2 dan §7 menang. Jangan menimpa
+    blok <!-- antislop:start --> sampai <!-- antislop:end --> di AGENTS.md.
+
+PERSIAPAN SEBELUM PROMPT 01
+- Siapkan folder kosong untuk proyek (mis. determined-scm) dan buka dengan agent.
+- Salin PROJECT_PLAN.md ke folder itu (root atau docs/).
+- Pastikan Node.js 22 atau lebih baru dan Git terpasang. Docker Desktop opsional (untuk Supabase lokal).
+
+FORMAT LAPORAN AGENT (selalu)
+Prompt NN percobaan ke-k | Status SELESAI/SEBAGIAN/GAGAL | kriteria "Selesai jika" LULUS/GAGAL |
+hasil gate | file diubah | "Cek manual untuk pemilik" | asumsi dan masalah.
+
+========================================================================
+RINGKASAN FASE
+========================================================================
+Fase  0: Audit dan Fondasi              Prompt 01 sampai 03
+Fase  1: Design System                  Prompt 04 sampai 07
+Fase  2: Database dan Keamanan          Prompt 08 sampai 16
+Fase  3: Autentikasi dan Pengguna       Prompt 17 sampai 19
+Fase  4: Master Data                    Prompt 20 sampai 23
+Fase  5: Pesanan Satu Pintu             Prompt 24 sampai 27
+Fase  6: Cek Stok dan Penerimaan        Prompt 28 sampai 32
+Fase  7: Produksi dan Stok              Prompt 33 sampai 37
+Fase  8: Pengemasan dan Pengiriman      Prompt 38 sampai 41
+Fase  9: Dasbor, Laporan, Audit         Prompt 42 sampai 43
+Fase 10: Kualitas                       Prompt 44 sampai 48
+Fase 11: Deployment dan Serah Terima    Prompt 49 sampai 53
+
+========================================================================
+DAFTAR PROMPT
+========================================================================
+01  Fase  0  P0-01          Audit lingkungan
+02  Fase  0  P0-02, P0-03   Inisialisasi proyek, lint, dan CI
+03  Fase  0  P0-04, P0-05, P0-06 Env, halaman dasar, utilitas format
+04  Fase  1  P1-01, P1-02   Token warna 20/40/40 dan skrip uji
+05  Fase  1  P1-03          Komponen dasar
+06  Fase  1  P1-04          Komponen data
+07  Fase  1  P1-05, P1-06   Shell aplikasi per peran dan kerangka cetak
+08  Fase  2  P2-00, P2-01   Supabase DEV dan init CLI  <- LANGKAH PEMILIK sebelum ini
+09  Fase  2  P2-02, P2-03   Migrasi 0001 sampai 0004
+10  Fase  2  P2-04          Migrasi 0005 sampai 0007
+11  Fase  2  P2-05          Migrasi 0008: fungsi inti
+12  Fase  2  P2-06          Migrasi 0009: stok dan persetujuan
+13  Fase  2  P2-07          Migrasi 0010: alur
+14  Fase  2  P2-08          Migrasi 0011 sampai 0015
+15  Fase  2  P2-09          Uji SQL
+16  Fase  2  P2-10, P2-11   Tipe, pembungkus RPC, dan uji konkurensi
+17  Fase  3  P3-01, P3-02   Klien Supabase, penjaga sesi, login
+18  Fase  3  P3-03, P3-04   Pemilik pertama dan manajemen pengguna  <- LANGKAH PEMILIK sebelum ini
+19  Fase  3  P3-05          Profil dan uji izin UI
+20  Fase  4  P4-01, P4-02   Pengaturan studio dan kategori
+21  Fase  4  P4-03          Produk dan kebutuhan kain per ukuran
+22  Fase  4  P4-04          Bahan, pengganti, konsumsi
+23  Fase  4  P4-05, P4-06   Pelanggan dan kesiapan data
+24  Fase  5  P5-01, P5-02   Validasi dan formulir Pesanan Baru
+25  Fase  5  P5-03          Daftar dan detail pesanan
+26  Fase  5  P5-04          Revisi bernomor versi
+27  Fase  5  P5-05          Salin pesanan dan berkas desain
+28  Fase  6  P6-01          Panel cek stok langsung
+29  Fase  6  P6-02          Terima pesanan dan invoice
+30  Fase  6  P6-03          Override stok
+31  Fase  6  P6-04          DP, SPK, dan pembatalan
+32  Fase  6  P6-05          Hold, rollback, kedaluwarsa
+33  Fase  7  P7-01          Antrean produksi dan SPK digital
+34  Fase  7  P7-02          Ringkasan stok dan catat stok
+35  Fase  7  P7-03          Mulai pemotongan
+36  Fase  7  P7-04          Tahap produksi dan keterlambatan
+37  Fase  7  P7-05, P7-06   Opname mingguan dan revisi terlambat
+38  Fase  8  P8-01          Layar pengemasan
+39  Fase  8  P8-02          Selesaikan pengemasan dan pengecualian
+40  Fase  8  P8-03          Lembar rincian dan label paket
+41  Fase  8  P8-04, P8-05   Pelunasan, pengiriman, laporan kesalahan
+42  Fase  9  P9-01, P9-02   Dasbor pemilik, admin, produksi
+43  Fase  9  P9-03, P9-04   Laporan, ekspor CSV, audit, persetujuan
+44  Fase 10  P10-01, P10-02 Uji unit dan matriks izin
+45  Fase 10  P10-03         Konkurensi dan idempotensi
+46  Fase 10  P10-04         Uji E2E alur utama
+47  Fase 10  P10-05         Aksesibilitas, kontras, proporsi warna
+48  Fase 10  P10-06         Performa dan pengerasan
+49  Fase 11  P11-01         Supabase PRODUKSI dan RUNBOOK  <- LANGKAH PEMILIK sebelum ini
+50  Fase 11  P11-02         Deploy aplikasi  <- LANGKAH PEMILIK sebelum ini
+51  Fase 11  P11-03         Data awal PRODUKSI  <- LANGKAH PEMILIK sebelum ini
+52  Fase 11  P11-04, P11-05 Cadangan, pemulihan, panduan
+53  Fase 11  P11-06         Jalan paralel dan go-live  <- LANGKAH PEMILIK sebelum ini
+
+Khusus: A Perbaikan | B Lanjutkan setelah kuota habis | C Build atau gate rusak | D Status dan audit | E Pemeriksaan keamanan sebelum rilis | F Ukur ulang proporsi warna | G Audit anti-slop (mode after)
+
+========================================================================
+PROMPT 01 DARI 53 | FASE 0: Audit dan Fondasi | P0-01
+========================================================================
+Audit lingkungan
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 01/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P0-01 Audit lingkungan.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §0, §2, §3.
+4. Task P0-01 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Pahami proyek dan catat kondisi nyata lingkungan. Belum ada perubahan kode.
+
+CATATAN KHUSUS:
+- Isi §3.1 hanya dari fakta (perintah yang dijalankan), bukan dari ingatan.
+- Bila folder aplikasi sudah ada, catat strukturnya apa adanya dan jangan merapikannya sekarang.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P0-01) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P0-01 terpenuhi.
+
+GATE:
+Jalankan G1 (npm run lint && npm run typecheck && npm run test). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Buka PROJECT_PLAN.md §3.1: tidak ada baris '(isi)'.
+- Baca ringkasan selisih lingkungan di laporan.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 02 DARI 53 | FASE 0: Audit dan Fondasi | P0-02, P0-03
+========================================================================
+Inisialisasi proyek, lint, dan CI
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 02/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P0-02 Inisialisasi proyek; P0-03 Lint, tipe, uji, dan CI.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §3, §0.7, §0.8.
+4. Task P0-02, P0-03 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Proyek Next.js 16 berjalan dengan struktur folder §3.3, lint, tipe, uji, dan CI hijau.
+
+CATATAN KHUSUS:
+- Jangan memasang paket di luar whitelist §3.2.
+- Skrip npm yang belum bisa dijalankan diberi pesan 'belum tersedia'.
+- Pertahankan blok pointer <!-- antislop:start --> sampai <!-- antislop:end --> di AGENTS.md, folder .agents/skills/, serta pengecualian anti-slop/** dan .agents/** pada ESLint dan tsconfig.json.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P0-02, P0-03) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P0-02, P0-03 terpenuhi.
+
+GATE:
+Jalankan G1 dan G2 (G1 ditambah npm run build). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Jalankan npm run dev lalu buka localhost:3000.
+- Lihat tab Actions di GitHub: alur CI hijau.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 03 DARI 53 | FASE 0: Audit dan Fondasi | P0-04, P0-05, P0-06
+========================================================================
+Env, halaman dasar, utilitas format
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 03/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P0-04 Lingkungan dan env; P0-05 Halaman dasar dan kesehatan; P0-06 Utilitas format dan pesan.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §3.5, §8.4, Lampiran A.
+4. Task P0-04, P0-05, P0-06 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Lingkungan tervalidasi, halaman kesehatan dan 404, serta utilitas format dan pemeta galat.
+
+CATATAN KHUSUS:
+- Pemeta galat harus mencakup semua kode Lampiran A.
+- Format memakai desimal koma dan titik ribuan.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P0-04, P0-05, P0-06) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P0-04, P0-05, P0-06 terpenuhi.
+
+GATE:
+Jalankan G1 dan G2 (G1 ditambah npm run build). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Buka /api/health dan satu rute sembarang (harus 404 ramah).
+- Lihat hasil uji format: Rp1.500.000 dan 14,5 m.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+GERBANG FASE 0 (Audit dan Fondasi)
+========================================================================
+Jangan lanjut ke fase berikutnya sebelum semua butir ini terpenuhi:
+- Proyek berjalan, CI hijau, /api/health benar, format Indonesia benar.
+- G2 lulus (npm run build) dan tidak ada cacat berat terbuka di Lampiran D.
+Bila lolos, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 04 DARI 53 | FASE 1: Design System | P1-01, P1-02
+========================================================================
+Token warna 20/40/40 dan skrip uji
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 04/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P1-01 Token warna dan tipografi; P1-02 Skrip kontras dan proporsi warna.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §7.2, §7.3, §7.5, §7.12.
+4. Task P1-01, P1-02 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Token warna merek dan tipografi terpasang, skrip kontras dan proporsi warna berjalan dan teruji.
+
+CATATAN KHUSUS:
+- Warna dasar: #A678B9 20%, #8CA9BC 40%, #8B7CC7 40%. Teks putih dilarang di atas fill warna dasar 500.
+- Salin skrip dari Lampiran F apa adanya, lalu tambah uji unit.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P1-01, P1-02) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P1-01, P1-02 terpenuhi.
+
+GATE:
+Jalankan G1 dan G5 (npm run check:contrast && npm run check:color-share && npm run test:a11y). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Buka /dev/tokens di ponsel dan laptop: palet dan tipografi terbaca.
+- Jalankan npm run check:contrast: semua LULUS.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 05 DARI 53 | FASE 1: Design System | P1-03
+========================================================================
+Komponen dasar
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 05/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P1-03 Komponen dasar.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §7.4, §7.8, §7.11.
+4. Task P1-03 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Button, Field, Badge, Card, Dialog, Toast, Skeleton, EmptyState, ErrorState lengkap dengan keadaan dan aksesibilitas.
+
+CATATAN KHUSUS:
+- Tinggi kontrol 48 px di mobile; fokus kontur 2 px violet-700.
+- Jangan menulis warna heksa di komponen; pakai token.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P1-03) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P1-03 terpenuhi.
+
+GATE:
+Jalankan G1 dan G5 (npm run check:contrast && npm run check:color-share && npm run test:a11y). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Buka /dev/komponen di 360 px: tombol mudah ditekan.
+- Tekan Tab: fokus terlihat jelas pada semua kontrol.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 06 DARI 53 | FASE 1: Design System | P1-04
+========================================================================
+Komponen data
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 06/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P1-04 Komponen data.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §7.8, §7.10, §12.
+4. Task P1-04 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+DataTable responsif, StatusBadge, NumberStepper, StatCard, SizeMatrix, StockPanel.
+
+CATATAN KHUSUS:
+- Selisih dan kekurangan harus punya teks, bukan hanya warna.
+- SizeMatrix menampilkan penerima untuk baris personal PDH dan PDL.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P1-04) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P1-04 terpenuhi.
+
+GATE:
+Jalankan G1 dan G5 (npm run check:contrast && npm run check:color-share && npm run test:a11y). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Lihat SizeMatrix dengan selisih 'L kurang 2, XL lebih 2'.
+- Lihat StockPanel dengan kekurangan 4,0 m.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 07 DARI 53 | FASE 1: Design System | P1-05, P1-06
+========================================================================
+Shell aplikasi per peran dan kerangka cetak
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 07/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P1-05 Shell aplikasi per peran; P1-06 Kerangka cetak.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §5, §7.9, §7.12, §11.
+4. Task P1-05, P1-06 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Layout dengan top bar, sidebar atau bottom-nav menurut peran, halaman placeholder, kerangka cetak A4, dan uji proporsi warna lima layar.
+
+CATATAN KHUSUS:
+- Atur pemakaian warna (bukan warna dasar) sampai check:color-share lulus dalam ±10 poin.
+- Hapus /dev/tokens dan /dev/komponen setelah selesai.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P1-05, P1-06) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P1-05, P1-06 terpenuhi.
+
+GATE:
+Jalankan G1 dan G5 (npm run check:contrast && npm run check:color-share && npm run test:a11y). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Lihat tiga tampilan peran di ponsel dan laptop.
+- Lihat angka proporsi warna di laporan (steel, violet, orchid).
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+GERBANG FASE 1 (Design System)
+========================================================================
+Jangan lanjut ke fase berikutnya sebelum semua butir ini terpenuhi:
+- Palet 20/40/40 terpasang dan terukur, komponen dan shell tampil benar di 360 px dan 1366 px, kontras lulus.
+- Pemeriksaan Delivery Gate antislop (antislop-ui, antislop-human, antislop-layoutmobile, antislop-copywriting) lulus bersama G5.
+- G2 lulus (npm run build) dan tidak ada cacat berat terbuka di Lampiran D.
+Bila lolos, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+LANGKAH PEMILIK 1: BUAT PROJECT SUPABASE DEV
+========================================================================
+1. Buka supabase.com, buat project baru bernama determined-scm-dev, region terdekat (Singapore bila tersedia), kata sandi database kuat (simpan di pengelola sandi).
+2. Di Project Settings > API, salin Project URL dan Publishable (anon) key. Salin juga Secret (service role) key. Jangan kirim kunci apa pun lewat chat.
+3. Buat berkas .env.local di folder proyek berisi NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, SUPABASE_SECRET_KEY, NEXT_PUBLIC_SITE_URL=http://localhost:3000.
+4. Di Authentication > Providers > Email: matikan 'Allow new users to sign up'.
+5. Jalankan npx supabase login lalu npx supabase link --project-ref <ref project>.
+6. Setelah selesai, lanjut ke Prompt 08.
+
+========================================================================
+PROMPT 08 DARI 53 | FASE 2: Database dan Keamanan | P2-00, P2-01
+========================================================================
+Supabase DEV dan init CLI
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 08/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P2-00 [PEMILIK] Project Supabase DEV; P2-01 Init Supabase CLI.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §9, §14, Lampiran F.
+4. Task P2-00, P2-01 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Verifikasi koneksi DEV tanpa mencetak secret; inisialisasi Supabase CLI dan skrip basis data.
+
+CATATAN KHUSUS:
+- Pastikan LANGKAH PEMILIK 1 sudah dilakukan sebelum prompt ini.
+- Pendaftaran mandiri harus nonaktif.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P2-00, P2-01) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P2-00, P2-01 terpenuhi.
+
+GATE:
+Jalankan G1 dan G3 (npm run db:reset && npm run db:test, atau npm run db:test:pg bila Docker tidak ada). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Di dashboard Supabase: Auth > sign up dimatikan.
+- npm run db:test:pg memberi hasil atau pesan yang jelas.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 09 DARI 53 | FASE 2: Database dan Keamanan | P2-02, P2-03
+========================================================================
+Migrasi 0001 sampai 0004
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 09/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P2-02 Migrasi 0001 dan 0002; P2-03 Migrasi 0003 dan 0004.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §9.1 sampai §9.3.
+4. Task P2-02, P2-03 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Salin migrasi fondasi, identitas, master data, dan pesanan persis seperti §9.3.
+
+CATATAN KHUSUS:
+- Jangan mengubah isi SQL; bila perlu perubahan, catat di Lampiran D dan minta persetujuan.
+- Periksa pemicu validasi item PDH dan PDL.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P2-02, P2-03) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P2-02, P2-03 terpenuhi.
+
+GATE:
+Jalankan G1 dan G3 (npm run db:reset && npm run db:test, atau npm run db:test:pg bila Docker tidak ada). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Lihat daftar tabel di Supabase Table Editor.
+- Coba tambah item kaos dengan nama penerima: harus ditolak.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 10 DARI 53 | FASE 2: Database dan Keamanan | P2-04
+========================================================================
+Migrasi 0005 sampai 0007
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 10/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P2-04 Migrasi 0005 sampai 0007.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §9.3, §6.6.
+4. Task P2-04 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Tabel stok, produksi, pengemasan, pembayaran, persetujuan, dan audit.
+
+CATATAN KHUSUS:
+- Constraint tanda pergerakan stok harus aktif.
+- Pemicu audit terpasang pada tabel kunci.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P2-04) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P2-04 terpenuhi.
+
+GATE:
+Jalankan G1 dan G3 (npm run db:reset && npm run db:test, atau npm run db:test:pg bila Docker tidak ada). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Tabel stock_movements, stock_reservations, packages, payments ada.
+- Audit log terisi saat ada perubahan.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 11 DARI 53 | FASE 2: Database dan Keamanan | P2-05
+========================================================================
+Migrasi 0008: fungsi inti
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 11/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P2-05 Migrasi 0008 (fungsi inti).
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §9.3, §6.5, §6.7, Lampiran B.
+4. Task P2-05 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Penomoran, hitung kebutuhan, cek dan pratinjau stok, terima pesanan, override.
+
+CATATAN KHUSUS:
+- Kunci baris bahan berurutan menurut id (konkurensi).
+- Hasil bisnis negatif dikembalikan sebagai jsonb {ok:false, code}.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P2-05) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P2-05 terpenuhi.
+
+GATE:
+Jalankan G1 dan G3 (npm run db:reset && npm run db:test, atau npm run db:test:pg bila Docker tidak ada). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Uji manual lewat SQL editor: stok 10, butuh 14 menolak.
+- Nomor pesanan format DS-YYMM-0001.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 12 DARI 53 | FASE 2: Database dan Keamanan | P2-06
+========================================================================
+Migrasi 0009: stok dan persetujuan
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 12/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P2-06 Migrasi 0009 (stok dan persetujuan).
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §9.3, §6.6, §6.12.
+4. Task P2-06 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Pergerakan stok, mulai pemotongan, opname, revisi terlambat, keputusan persetujuan.
+
+CATATAN KHUSUS:
+- Pemakaian wajib untuk setiap bahan yang dicadangkan; sisa wajib atau dikonfirmasi tidak ada.
+- Penyesuaian stok langsung hanya pemilik.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P2-06) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P2-06 terpenuhi.
+
+GATE:
+Jalankan G1 dan G3 (npm run db:reset && npm run db:test, atau npm run db:test:pg bila Docker tidak ada). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Mulai pemotongan tanpa sisa ditolak.
+- Opname besar menunggu persetujuan pemilik.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 13 DARI 53 | FASE 2: Database dan Keamanan | P2-07
+========================================================================
+Migrasi 0010: alur
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 13/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P2-07 Migrasi 0010 (alur).
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §9.3, §6.8 sampai §6.10.
+4. Task P2-07 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Status, pembayaran, pengemasan, pengiriman, pembatalan, hold, penjadwal, pengguna.
+
+CATATAN KHUSUS:
+- Ketidakcocokan pengemasan dicatat dan dikembalikan sebagai hasil, bukan exception.
+- Pemilik terakhir dilindungi pemicu.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P2-07) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P2-07 terpenuhi.
+
+GATE:
+Jalankan G1 dan G3 (npm run db:reset && npm run db:test, atau npm run db:test:pg bila Docker tidak ada). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Alur penuh dari draf sampai selesai lewat fungsi.
+- Pengemasan salah menghasilkan PACKING_MISMATCH.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 14 DARI 53 | FASE 2: Database dan Keamanan | P2-08
+========================================================================
+Migrasi 0011 sampai 0015
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 14/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P2-08 Migrasi 0011 sampai 0015.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §9.3, §9.4, §10.
+4. Task P2-08 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+View, RLS, grant, referensi, cron, dan storage.
+
+CATATAN KHUSUS:
+- 0014 dan 0015 hanya di Supabase. Verifikasi pg_cron dan Storage menurut dokumentasi terbaru.
+- Anon tidak boleh mengeksekusi fungsi apa pun.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P2-08) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P2-08 terpenuhi.
+
+GATE:
+Jalankan G1 dan G3 (npm run db:reset && npm run db:test, atau npm run db:test:pg bila Docker tidak ada). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Di dashboard: RLS aktif di semua tabel.
+- Bucket design-thumbnails bersifat privat.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 15 DARI 53 | FASE 2: Database dan Keamanan | P2-09
+========================================================================
+Uji SQL
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 15/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P2-09 Uji SQL (port Lampiran F).
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §13, Lampiran F.
+4. Task P2-09 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Pindahkan skenario T01 sampai T24 menjadi uji otomatis (pgTAP atau skrip t.ok).
+
+CATATAN KHUSUS:
+- Pertahankan nama assertion.
+- Laporkan jumlah assertion lulus dan gagal.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P2-09) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P2-09 terpenuhi.
+
+GATE:
+Jalankan G1 dan G3 (npm run db:reset && npm run db:test, atau npm run db:test:pg bila Docker tidak ada). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Lihat ringkasan jumlah assertion lulus.
+- Jalankan ulang npm run db:test dan hasilnya sama.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 16 DARI 53 | FASE 2: Database dan Keamanan | P2-10, P2-11
+========================================================================
+Tipe, pembungkus RPC, dan uji konkurensi
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 16/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P2-10 Tipe dan pembungkus RPC; P2-11 Konkurensi dan kedaluwarsa di DEV.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §8.2, §8.4, §13.2.
+4. Task P2-10, P2-11 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Tipe TypeScript, callRpc, pemeta galat penuh, dan uji paralel di DEV.
+
+CATATAN KHUSUS:
+- Uji paralel: 8 permintaan serentak pada stok 10 m dan 3 m per pesanan; tepat 3 diterima.
+- Uji kedaluwarsa reservasi dengan menggeser expires_at.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P2-10, P2-11) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P2-10, P2-11 terpenuhi.
+
+GATE:
+Jalankan G1 dan G3 (npm run db:reset && npm run db:test, atau npm run db:test:pg bila Docker tidak ada). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Lihat hasil uji paralel: diterima 3, ditolak 5, reservasi 9 m.
+- Pesanan kedaluwarsa menjadi dibatalkan otomatis.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+GERBANG FASE 2 (Database dan Keamanan)
+========================================================================
+Jangan lanjut ke fase berikutnya sebelum semua butir ini terpenuhi:
+- Seluruh migrasi terpasang di DEV, 119 assertion atau setara lulus, konkurensi lulus, RLS aktif, anon tanpa akses.
+- G2 lulus (npm run build) dan tidak ada cacat berat terbuka di Lampiran D.
+Bila lolos, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 17 DARI 53 | FASE 3: Autentikasi dan Pengguna | P3-01, P3-02
+========================================================================
+Klien Supabase, penjaga sesi, login
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 17/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P3-01 Klien Supabase dan penjaga sesi; P3-02 Login dan sandi.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §8.1, §10, §11.
+4. Task P3-01, P3-02 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Sesi, proxy.ts, requireRole, halaman login dan sandi.
+
+CATATAN KHUSUS:
+- Kunci service role tidak boleh ada di bundel klien (grep .next).
+- Galat login tidak membedakan akun tidak ada dan sandi salah.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P3-01, P3-02) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P3-01, P3-02 terpenuhi.
+
+GATE:
+Jalankan G1 dan G4 (npm run test:e2e). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Login dan keluar dari satu akun uji.
+- Buka /pesanan tanpa login: diarahkan ke /masuk.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+LANGKAH PEMILIK 2: BUAT AKUN PEMILIK PERTAMA
+========================================================================
+1. Di Authentication > Users > Add user, buat satu pengguna dengan email pemilik dan kata sandi kuat; centang Auto Confirm User.
+2. Di SQL Editor, jalankan skrip scripts/bootstrap-owner.sql yang disiapkan agent (isi email pemilik pada skrip, jangan commit email asli).
+3. Login ke aplikasi dengan akun itu. Pastikan menu pemilik tampil.
+4. Setelah selesai, lanjut ke Prompt 18 bagian pengguna.
+
+========================================================================
+PROMPT 18 DARI 53 | FASE 3: Autentikasi dan Pengguna | P3-03, P3-04
+========================================================================
+Pemilik pertama dan manajemen pengguna
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 18/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P3-03 [PEMILIK] Akun pemilik pertama; P3-04 Manajemen pengguna.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §5, §10.2, §14.6.
+4. Task P3-03, P3-04 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Skrip bootstrap pemilik dan layar manajemen pengguna.
+
+CATATAN KHUSUS:
+- Pastikan LANGKAH PEMILIK 2 sudah dilakukan.
+- Admin client hanya dipakai di server action pembuatan pengguna.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P3-03, P3-04) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P3-03, P3-04 terpenuhi.
+
+GATE:
+Jalankan G1 dan G4 (npm run test:e2e). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Buat satu admin dan satu produksi dari layar pengguna.
+- Coba nonaktifkan pemilik terakhir: ditolak.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 19 DARI 53 | FASE 3: Autentikasi dan Pengguna | P3-05
+========================================================================
+Profil dan uji izin UI
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 19/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P3-05 Profil dan uji izin UI.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §5.1, §11.
+4. Task P3-05 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Profil sendiri dan uji matriks rute per peran.
+
+CATATAN KHUSUS:
+- Uji E2E: tiap rute §11 diuji oleh tiga peran dan satu tamu.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P3-05) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P3-05 terpenuhi.
+
+GATE:
+Jalankan G1 dan G4 (npm run test:e2e). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Login sebagai produksi lalu buka /dasbor: ditolak.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+GERBANG FASE 3 (Autentikasi dan Pengguna)
+========================================================================
+Jangan lanjut ke fase berikutnya sebelum semua butir ini terpenuhi:
+- Login tiga peran, matriks rute per peran lulus, pemilik terakhir terlindungi.
+- G2 lulus (npm run build) dan tidak ada cacat berat terbuka di Lampiran D.
+Bila lolos, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 20 DARI 53 | FASE 4: Master Data | P4-01, P4-02
+========================================================================
+Pengaturan studio dan kategori
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 20/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P4-01 Pengaturan studio; P4-02 Kategori dan ukuran.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §6.1, §6.2, §18.
+4. Task P4-01, P4-02 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Pengaturan DP, buangan, kedaluwarsa, toleransi opname, rekening; kategori dan ukuran.
+
+CATATAN KHUSUS:
+- Nilai awal ditandai 'default, belum dikonfirmasi pemilik'.
+- Kategori PDH dan PDL mendukung personalisasi (Q-01).
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P4-01, P4-02) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P4-01, P4-02 terpenuhi.
+
+GATE:
+Jalankan G1 dan G5 (npm run check:contrast && npm run check:color-share && npm run test:a11y). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Ubah persen DP lalu lihat audit log.
+- Ubah ukuran PDH dan lihat tersimpan.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 21 DARI 53 | FASE 4: Master Data | P4-03
+========================================================================
+Produk dan kebutuhan kain per ukuran
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 21/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P4-03 Produk dan kebutuhan kain per ukuran.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §6.2, §6.5, D-10.
+4. Task P4-03 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Produk dan editor matriks kebutuhan kain per ukuran termasuk KHUSUS.
+
+CATATAN KHUSUS:
+- Jangan mengisi angka kebutuhan kain sendiri; data berasal dari pemilik (Q-06). Pakai data CONTOH di DEV.
+- Peringatkan ukuran baku tanpa spesifikasi.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P4-03) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P4-03 terpenuhi.
+
+GATE:
+Jalankan G1 dan G5 (npm run check:contrast && npm run check:color-share && npm run test:a11y). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Tambah produk PDH dengan ukuran S sampai XXXL dan KHUSUS.
+- Lihat daftar 'belum siap' bila ada ukuran tanpa spesifikasi.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 22 DARI 53 | FASE 4: Master Data | P4-04
+========================================================================
+Bahan, pengganti, konsumsi
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 22/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P4-04 Bahan, pengganti, dan konsumsi.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §6.4, §6.5.
+4. Task P4-04 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Bahan dengan jenis, satuan, batas minimum, pelacakan per pesanan, bahan pengganti, aturan konsumsi non-kain.
+
+CATATAN KHUSUS:
+- Jelaskan 'dilacak per pesanan' dan 'memblokir penerimaan' dengan bahasa usaha.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P4-04) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P4-04 terpenuhi.
+
+GATE:
+Jalankan G1 dan G5 (npm run check:contrast && npm run check:color-share && npm run test:a11y). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Tambah satu kain, satu aksesori (kancing), satu tinta dengan pengaturan berbeda.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 23 DARI 53 | FASE 4: Master Data | P4-05, P4-06
+========================================================================
+Pelanggan dan kesiapan data
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 23/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P4-05 Pelanggan; P4-06 Kesiapan data.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §5.1, §10.3.
+4. Task P4-05, P4-06 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Pelanggan untuk admin dan pemilik; halaman Kesiapan Data.
+
+CATATAN KHUSUS:
+- Kontak hanya terlihat admin dan pemilik.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P4-05, P4-06) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P4-05, P4-06 terpenuhi.
+
+GATE:
+Jalankan G1 dan G5 (npm run check:contrast && npm run check:color-share && npm run test:a11y). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Cari pelanggan dengan sebagian nama.
+- Lihat daftar kesiapan data pada data yang belum lengkap.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+GERBANG FASE 4 (Master Data)
+========================================================================
+Jangan lanjut ke fase berikutnya sebelum semua butir ini terpenuhi:
+- Pemilik dapat menyiapkan kategori, produk, kebutuhan kain, bahan, pelanggan, dan pengaturan.
+- G2 lulus (npm run build) dan tidak ada cacat berat terbuka di Lampiran D.
+Bila lolos, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 24 DARI 53 | FASE 5: Pesanan Satu Pintu | P5-01, P5-02
+========================================================================
+Validasi dan formulir Pesanan Baru
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 24/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P5-01 Skema validasi dan draf lokal; P5-02 Formulir Pesanan Baru.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §6.3, §8.5, §12.
+4. Task P5-01, P5-02 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Skema Zod, draf lokal, formulir satu pintu dengan ItemEditor dan mode matriks ukuran.
+
+CATATAN KHUSUS:
+- Baris PDH personal: satu baris per penerima.
+- Draf lokal tidak menyimpan kontak pelanggan.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P5-01, P5-02) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P5-01, P5-02 terpenuhi.
+
+GATE:
+Jalankan G1 dan G4 (npm run test:e2e). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Buat pesanan kaos 14 S dan pesanan PDH 4 baris personal.
+- Muat ulang halaman: draf bisa dipulihkan.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 25 DARI 53 | FASE 5: Pesanan Satu Pintu | P5-03
+========================================================================
+Daftar dan detail pesanan
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 25/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P5-03 Daftar dan detail pesanan.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §11, NF1.
+4. Task P5-03 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Daftar menurut tenggat dengan pencarian, detail bertab, riwayat status.
+
+CATATAN KHUSUS:
+- Ukur pencarian pada 2.000 pesanan data uji dan laporkan angkanya.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P5-03) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P5-03 terpenuhi.
+
+GATE:
+Jalankan G1 dan G4 (npm run test:e2e). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Cari pesanan dengan nomor dan dengan nama pelanggan.
+- Buka semua tab detail.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 26 DARI 53 | FASE 5: Pesanan Satu Pintu | P5-04
+========================================================================
+Revisi bernomor versi
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 26/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P5-04 Revisi bernomor versi.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §6.11, R7.
+4. Task P5-04 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Halaman ubah, konflik versi, diff antarversi.
+
+CATATAN KHUSUS:
+- Setelah cutting arahkan ke revisi terlambat (P7-06).
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P5-04) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P5-04 terpenuhi.
+
+GATE:
+Jalankan G1 dan G4 (npm run test:e2e). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Ubah jumlah lalu lihat versi naik.
+- Buka dua tab dan ubah bersamaan: konflik versi.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 27 DARI 53 | FASE 5: Pesanan Satu Pintu | P5-05
+========================================================================
+Salin pesanan dan berkas desain
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 27/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P5-05 Salin pesanan dan berkas desain.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §8.8, D-17.
+4. Task P5-05 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Salin sebagai draf baru; tautan dan thumbnail desain.
+
+CATATAN KHUSUS:
+- Thumbnail maksimal 2 MB, tipe jpeg, png, webp, bucket privat.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P5-05) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P5-05 terpenuhi.
+
+GATE:
+Jalankan G1 dan G4 (npm run test:e2e). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Salin satu pesanan lama menjadi draf.
+- Unggah gambar 3 MB: ditolak.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+GERBANG FASE 5 (Pesanan Satu Pintu)
+========================================================================
+Jangan lanjut ke fase berikutnya sebelum semua butir ini terpenuhi:
+- Pesanan kaos dan PDH personal dapat dibuat, direvisi, dicari, dan disalin.
+- G2 lulus (npm run build) dan tidak ada cacat berat terbuka di Lampiran D.
+Bila lolos, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 28 DARI 53 | FASE 6: Cek Stok dan Penerimaan | P6-01
+========================================================================
+Panel cek stok langsung
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 28/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P6-01 Panel cek stok langsung.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §6.5, §12, R2.
+4. Task P6-01 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+StockPanel yang memanggil preview_stock dan check_stock, tindakan saat stok kurang.
+
+CATATAN KHUSUS:
+- Debounce 400 ms.
+- Tombol Terima nonaktif dengan alasan tertulis.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P6-01) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P6-01 terpenuhi.
+
+GATE:
+Jalankan G1 dan G4 (npm run test:e2e). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Buat draf 14 × S saat stok 10: tombol Terima nonaktif, kurang 4,0 tampil.
+- Pilih ukuran tanpa spesifikasi: ada penjelasan.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 29 DARI 53 | FASE 6: Cek Stok dan Penerimaan | P6-02
+========================================================================
+Terima pesanan dan invoice
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 29/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P6-02 Terima pesanan dan invoice.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §6.9, §11.
+4. Task P6-02 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+accept_order dan invoice cetak.
+
+CATATAN KHUSUS:
+- Invoice memuat rekening dari pengaturan; bila kosong, tampilkan peringatan.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P6-02) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P6-02 terpenuhi.
+
+GATE:
+Jalankan G1 dan G4 (npm run test:e2e). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Terima pesanan dengan stok cukup lalu cetak invoice.
+- DP tampil 50% dari total.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 30 DARI 53 | FASE 6: Cek Stok dan Penerimaan | P6-03
+========================================================================
+Override stok
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 30/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P6-03 Override stok.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §5.2 B, R2.
+4. Task P6-03 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Pengajuan override admin, keputusan pemilik, badge menunggu bahan.
+
+CATATAN KHUSUS:
+- Admin tidak boleh menyetujui.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P6-03) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P6-03 terpenuhi.
+
+GATE:
+Jalankan G1 dan G4 (npm run test:e2e). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Ajukan override sebagai admin lalu setujui sebagai pemilik.
+- Pesanan tampil dengan badge dan ETA.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 31 DARI 53 | FASE 6: Cek Stok dan Penerimaan | P6-04
+========================================================================
+DP, SPK, dan pembatalan
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 31/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P6-04 DP, SPK, dan pembatalan.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §6.9, R8.
+4. Task P6-04 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Pembayaran DP, validasi mutasi, SPK, tandai bahan dibeli, pembatalan dan DP hangus.
+
+CATATAN KHUSUS:
+- Opsi hanguskan DP hanya pemilik dan hanya bila syarat terpenuhi.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P6-04) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P6-04 terpenuhi.
+
+GATE:
+Jalankan G1 dan G4 (npm run test:e2e). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Catat DP sebagian lalu penuh: status berubah hanya saat penuh.
+- Coba hanguskan DP sebagai admin: tidak tersedia.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 32 DARI 53 | FASE 6: Cek Stok dan Penerimaan | P6-05
+========================================================================
+Hold, rollback, kedaluwarsa
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 32/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P6-05 Hold, rollback, dan kedaluwarsa tampil.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §6.8, R13.
+4. Task P6-05 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Tahan dan lepas pesanan, rollback pemilik, hitung mundur reservasi.
+
+CATATAN KHUSUS:
+- Pesanan ditahan tidak dapat berpindah status.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P6-05) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P6-05 terpenuhi.
+
+GATE:
+Jalankan G1 dan G4 (npm run test:e2e). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Tahan sebuah pesanan lalu coba catat DP: ditolak.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+GERBANG FASE 6 (Cek Stok dan Penerimaan)
+========================================================================
+Jangan lanjut ke fase berikutnya sebelum semua butir ini terpenuhi:
+- Stok kurang memblokir, override berjalan, DP dan SPK bekerja, hold dan kedaluwarsa bekerja.
+- G2 lulus (npm run build) dan tidak ada cacat berat terbuka di Lampiran D.
+Bila lolos, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 33 DARI 53 | FASE 7: Produksi dan Stok | P7-01
+========================================================================
+Antrean produksi dan SPK digital
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 33/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P7-01 Antrean produksi dan SPK digital.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §6.3, §11, R12.
+4. Task P7-01 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Antrean mobile-first dan SPK cetak.
+
+CATATAN KHUSUS:
+- Produksi tidak melihat harga atau kontak di layar mana pun.
+- SPK hanya versi aktif.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P7-01) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P7-01 terpenuhi.
+
+GATE:
+Jalankan G1 dan G4 (npm run test:e2e). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Buka /produksi di ponsel 360 px.
+- Cetak SPK PDH personal dan lihat nama penerima.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 34 DARI 53 | FASE 7: Produksi dan Stok | P7-02
+========================================================================
+Ringkasan stok dan catat stok
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 34/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P7-02 Ringkasan stok dan catat stok.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §6.6, §11.
+4. Task P7-02 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Stok, menipis, riwayat, catat masuk dan sisa terpakai.
+
+CATATAN KHUSUS:
+- Tangani NEGATIVE_STOCK dan REMNANT_INSUFFICIENT.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P7-02) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P7-02 terpenuhi.
+
+GATE:
+Jalankan G1 dan G4 (npm run test:e2e). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Catat pembelian kain 20 m: saldo naik.
+- Admin tidak melihat tombol catat.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 35 DARI 53 | FASE 7: Produksi dan Stok | P7-03
+========================================================================
+Mulai pemotongan
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 35/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P7-03 Mulai pemotongan.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §6.5, §6.6, R4, R5.
+4. Task P7-03 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Formulir pemakaian aktual dan sisa potongan.
+
+CATATAN KHUSUS:
+- Sisa kosong butuh konfirmasi 'tidak ada sisa'.
+- Izin stok negatif hanya terlihat pemilik.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P7-03) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P7-03 terpenuhi.
+
+GATE:
+Jalankan G1 dan G4 (npm run test:e2e). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Mulai pemotongan tanpa sisa: ditolak.
+- Setelah mulai: stok utama turun dan kolam sisa naik.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 36 DARI 53 | FASE 7: Produksi dan Stok | P7-04
+========================================================================
+Tahap produksi dan keterlambatan
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 36/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P7-04 Tahap produksi dan keterlambatan.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §5.2 D, §11.
+4. Task P7-04 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Pindah tahap dan catat alasan keterlambatan.
+
+CATATAN KHUSUS:
+- Alasan keterlambatan menempel pada tahap yang baru diselesaikan.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P7-04) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P7-04 terpenuhi.
+
+GATE:
+Jalankan G1 dan G4 (npm run test:e2e). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Pindahkan satu pesanan sampai QC dan pengemasan.
+- Lihat durasi tiap tahap.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 37 DARI 53 | FASE 7: Produksi dan Stok | P7-05, P7-06
+========================================================================
+Opname mingguan dan revisi terlambat
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 37/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P7-05 Opname mingguan; P7-06 Revisi setelah pemotongan.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §6.11, §6.12, R6, R7.
+4. Task P7-05, P7-06 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Opname dengan persetujuan selisih besar, revisi setelah pemotongan.
+
+CATATAN KHUSUS:
+- Jumlah dikunci pada revisi terlambat (D-28).
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P7-05, P7-06) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P7-05, P7-06 terpenuhi.
+
+GATE:
+Jalankan G1 dan G4 (npm run test:e2e). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Isi hitungan fisik dengan selisih kecil dan besar.
+- Ajukan revisi terlambat dan setujui sebagai pemilik.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+GERBANG FASE 7 (Produksi dan Stok)
+========================================================================
+Jangan lanjut ke fase berikutnya sebelum semua butir ini terpenuhi:
+- Antrean dan SPK, catat stok, mulai pemotongan dengan sisa, tahap produksi, opname, revisi terlambat.
+- G2 lulus (npm run build) dan tidak ada cacat berat terbuka di Lampiran D.
+Bila lolos, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 38 DARI 53 | FASE 8: Pengemasan dan Pengiriman | P8-01
+========================================================================
+Layar pengemasan
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 38/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P8-01 Layar pengemasan.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §6.10, R9.
+4. Task P8-01 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+PackingMatrix per baris pesanan dan paket, indikator selisih langsung.
+
+CATATAN KHUSUS:
+- Satu pesanan boleh banyak paket.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P8-01) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P8-01 terpenuhi.
+
+GATE:
+Jalankan G1 dan G4 (npm run test:e2e). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Kemas pesanan PDH 4 baris dalam dua paket.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 39 DARI 53 | FASE 8: Pengemasan dan Pengiriman | P8-02
+========================================================================
+Selesaikan pengemasan dan pengecualian
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 39/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P8-02 Selesaikan pengemasan dan pengecualian.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §12, R9.
+4. Task P8-02 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+complete_packing, pesan selisih, pengecualian.
+
+CATATAN KHUSUS:
+- Pesan selisih dibuat oleh size-diff.ts dari hasil verify_packing.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P8-02) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P8-02 terpenuhi.
+
+GATE:
+Jalankan G1 dan G4 (npm run test:e2e). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Kemas L 8 dan XL 2 untuk pesanan L 10: terblokir dengan pesan 'L kurang 2, XL lebih 2'.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 40 DARI 53 | FASE 8: Pengemasan dan Pengiriman | P8-03
+========================================================================
+Lembar rincian dan label paket
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 40/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P8-03 Lembar rincian dan label paket.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §11.
+4. Task P8-03 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Cetak per paket tanpa harga dan kontak.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P8-03) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P8-03 terpenuhi.
+
+GATE:
+Jalankan G1 dan G5 (npm run check:contrast && npm run check:color-share && npm run test:a11y). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Cetak lembar rincian: tidak ada harga atau kontak.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 41 DARI 53 | FASE 8: Pengemasan dan Pengiriman | P8-04, P8-05
+========================================================================
+Pelunasan, pengiriman, laporan kesalahan
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 41/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P8-04 Pelunasan, pengiriman, penyelesaian; P8-05 Laporan kesalahan pengemasan.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §6.9, R10.
+4. Task P8-04, P8-05 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Pelunasan, siap kirim, kirim, selesai, laporan ketidakcocokan.
+
+CATATAN KHUSUS:
+- Hanya pemilik yang membuka laporan kesalahan pengemasan.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P8-04, P8-05) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P8-04, P8-05 terpenuhi.
+
+GATE:
+Jalankan G1 dan G4 (npm run test:e2e). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Coba kirim sebelum pelunasan: ditolak.
+- Lihat kejadian ketidakcocokan di laporan.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+GERBANG FASE 8 (Pengemasan dan Pengiriman)
+========================================================================
+Jangan lanjut ke fase berikutnya sebelum semua butir ini terpenuhi:
+- Pengemasan per baris pesanan terblokir saat selisih, pelunasan dan pengiriman berjalan.
+- G2 lulus (npm run build) dan tidak ada cacat berat terbuka di Lampiran D.
+Bila lolos, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 42 DARI 53 | FASE 9: Dasbor, Laporan, Audit | P9-01, P9-02
+========================================================================
+Dasbor pemilik, admin, produksi
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 42/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P9-01 Dasbor pemilik; P9-02 Dasbor admin dan produksi.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §11.
+4. Task P9-01, P9-02 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Dasbor per peran dengan tindakan berikutnya.
+
+CATATAN KHUSUS:
+- Angka dasbor harus sama dengan kueri manual.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P9-01, P9-02) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P9-01, P9-02 terpenuhi.
+
+GATE:
+Jalankan G1 dan G4 (npm run test:e2e). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Bandingkan satu angka dasbor dengan hitungan manual.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 43 DARI 53 | FASE 9: Dasbor, Laporan, Audit | P9-03, P9-04
+========================================================================
+Laporan, ekspor CSV, audit, persetujuan
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 43/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P9-03 Laporan dan ekspor CSV; P9-04 Audit log dan kotak persetujuan.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §6.13, D-25, §11.
+4. Task P9-03, P9-04 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Laporan, CSV UTF-8 BOM titik koma, penampil audit, kotak persetujuan.
+
+CATATAN KHUSUS:
+- Rute ekspor hanya pemilik.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P9-03, P9-04) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P9-03, P9-04 terpenuhi.
+
+GATE:
+Jalankan G1 dan G4 (npm run test:e2e). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Unduh CSV dan buka di Excel: kolom terpisah, huruf utuh.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+GERBANG FASE 9 (Dasbor, Laporan, Audit)
+========================================================================
+Jangan lanjut ke fase berikutnya sebelum semua butir ini terpenuhi:
+- Dasbor per peran, laporan, ekspor CSV, audit log.
+- G2 lulus (npm run build) dan tidak ada cacat berat terbuka di Lampiran D.
+Bila lolos, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 44 DARI 53 | FASE 10: Kualitas | P10-01, P10-02
+========================================================================
+Uji unit dan matriks izin
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 44/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P10-01 Uji unit menyeluruh; P10-02 Matriks izin.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §10.6, §13.
+4. Task P10-01, P10-02 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Uji unit menyeluruh dan matriks izin per peran per tabel dan fungsi.
+
+CATATAN KHUSUS:
+- Uji negatif wajib: produksi tidak membaca harga atau kontak.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P10-01, P10-02) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P10-01, P10-02 terpenuhi.
+
+GATE:
+Jalankan G1 dan G3 (npm run db:reset && npm run db:test, atau npm run db:test:pg bila Docker tidak ada). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Lihat tabel hasil matriks izin.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 45 DARI 53 | FASE 10: Kualitas | P10-03
+========================================================================
+Konkurensi dan idempotensi
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 45/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P10-03 Konkurensi dan idempotensi.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §13.2 U3, §8.6.
+4. Task P10-03 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Uji paralel dan klik ganda.
+
+CATATAN KHUSUS:
+- Verifikasi stok dan reservasi konsisten setelah setiap uji.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P10-03) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P10-03 terpenuhi.
+
+GATE:
+Jalankan G1 dan G3 (npm run db:reset && npm run db:test, atau npm run db:test:pg bila Docker tidak ada). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Lihat hasil uji paralel dan jumlah reservasi.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 46 DARI 53 | FASE 10: Kualitas | P10-04
+========================================================================
+Uji E2E alur utama
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 46/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P10-04 Uji E2E alur utama.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §13.2.
+4. Task P10-04 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+E2E U1 sampai U13 dan U15 sampai U17.
+
+CATATAN KHUSUS:
+- Pakai skenario kaos massal dan PDH personal.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P10-04) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P10-04 terpenuhi.
+
+GATE:
+Jalankan G1 dan G4 (npm run test:e2e). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Lihat tabel hasil uji penerimaan.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 47 DARI 53 | FASE 10: Kualitas | P10-05
+========================================================================
+Aksesibilitas, kontras, proporsi warna
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 47/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P10-05 Aksesibilitas, kontras, dan proporsi warna.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §7.11, §7.12.
+4. Task P10-05 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+axe, kontras, proporsi 20/40/40 pada lima layar, 360 px.
+
+CATATAN KHUSUS:
+- Atur pemakaian warna, bukan warna dasar.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P10-05) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P10-05 terpenuhi.
+
+GATE:
+Jalankan G1 dan G5 (npm run check:contrast && npm run check:color-share && npm run test:a11y). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Lihat angka proporsi warna akhir.
+- Coba layar produksi di 360 px.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 48 DARI 53 | FASE 10: Kualitas | P10-06
+========================================================================
+Performa dan pengerasan
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 48/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P10-06 Performa dan pengerasan.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §10.5, §13.3.
+4. Task P10-06 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+NF1 sampai NF3, header, batas laju, audit dependensi, TEST_REPORT.
+
+CATATAN KHUSUS:
+- Tulis hasil nyata atau 'belum diuji' beserta alasan.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P10-06) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P10-06 terpenuhi.
+
+GATE:
+Jalankan G1 dan G3 (npm run db:reset && npm run db:test, atau npm run db:test:pg bila Docker tidak ada). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Baca docs/TEST_REPORT.md.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+GERBANG FASE 10 (Kualitas)
+========================================================================
+Jangan lanjut ke fase berikutnya sebelum semua butir ini terpenuhi:
+- TEST_REPORT.md berisi hasil nyata, tidak ada cacat berat terbuka, G5 lulus.
+- G2 lulus (npm run build) dan tidak ada cacat berat terbuka di Lampiran D.
+Bila lolos, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+LANGKAH PEMILIK 3: PROJECT SUPABASE PRODUKSI DAN KEPUTUSAN PAKET
+========================================================================
+1. Buat project baru determined-scm-prod di Supabase. Putuskan paket: Pro (cadangan harian bawaan, proyek tidak dijeda) atau gratis dengan syarat ekspor cadangan mingguan dan aktivitas harian (PROJECT_PLAN §14.2). Periksa harga terkini di halaman resmi Supabase.
+2. Matikan pendaftaran mandiri dan atur panjang sandi minimal 10.
+3. Simpan kunci di pengelola sandi, bukan di chat. Berikan kepada agent hanya melalui .env.production.local di mesin Anda.
+4. Setelah selesai, lanjut ke Prompt 49.
+
+========================================================================
+PROMPT 49 DARI 53 | FASE 11: Deployment dan Serah Terima | P11-01
+========================================================================
+Supabase PRODUKSI dan RUNBOOK
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 49/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P11-01 [PEMILIK+agent] Supabase PRODUKSI dan keputusan paket.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §14.1 sampai §14.3.
+4. Task P11-01 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Verifikasi proyek PRODUKSI, dorong migrasi, tulis RUNBOOK.
+
+CATATAN KHUSUS:
+- Pastikan LANGKAH PEMILIK 3 sudah dilakukan. Tidak ada seed contoh di PRODUKSI.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P11-01) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P11-01 terpenuhi.
+
+GATE:
+Jalankan G1 dan G3 (npm run db:reset && npm run db:test, atau npm run db:test:pg bila Docker tidak ada). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Baca RUNBOOK dan keputusan paket Supabase.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+LANGKAH PEMILIK 4: HOSTING, DOMAIN, DAN EMAIL
+========================================================================
+1. Pilih hosting (Vercel atau Cloudflare Pages), hubungkan repositori, isi variabel lingkungan PRODUKSI.
+2. Di Supabase Auth > URL Configuration: isi Site URL dan Redirect URL dengan alamat aplikasi.
+3. Atur SMTP (agar email sandi terkirim) atau gunakan pengaturan email bawaan sementara.
+4. Setelah selesai, lanjut ke Prompt 50.
+
+========================================================================
+PROMPT 50 DARI 53 | FASE 11: Deployment dan Serah Terima | P11-02
+========================================================================
+Deploy aplikasi
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 50/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P11-02 Deploy aplikasi.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §14.5.
+4. Task P11-02 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Hosting, env, redirect Auth, SMTP, domain.
+
+CATATAN KHUSUS:
+- Pastikan LANGKAH PEMILIK 4 sudah dilakukan.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P11-02) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P11-02 terpenuhi.
+
+GATE:
+Jalankan G1 dan G2 (G1 ditambah npm run build). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Buka URL produksi dan login sebagai pemilik.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+LANGKAH PEMILIK 5: DATA NYATA
+========================================================================
+1. Kumpulkan: daftar bahan baku dan batas minimum, kebutuhan kain per potong menurut produk dan ukuran (ukur pada tiga pesanan nyata per kategori), rekening BCA dan Mandiri untuk invoice, daftar ukuran PDH dan PDL.
+2. Hitung fisik semua kain, aksesori, dan sisa potongan yang ada hari ini untuk opname pertama.
+3. Duduk bersama agent saat mengisi data. Jangan menyalin angka dari contoh.
+4. Setelah selesai, lanjut ke Prompt 51.
+
+========================================================================
+PROMPT 51 DARI 53 | FASE 11: Deployment dan Serah Terima | P11-03
+========================================================================
+Data awal PRODUKSI
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 51/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P11-03 Data awal PRODUKSI.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §14.6.
+4. Task P11-03 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Pengguna, master data nyata, opname pertama.
+
+CATATAN KHUSUS:
+- Pastikan LANGKAH PEMILIK 5 dilakukan bersama pemilik. Jangan mengarang angka.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P11-03) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P11-03 terpenuhi.
+
+GATE:
+Jalankan G1 dan G3 (npm run db:reset && npm run db:test, atau npm run db:test:pg bila Docker tidak ada). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Halaman Kesiapan Data kosong.
+- Stok awal sama dengan hitungan fisik.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+PROMPT 52 DARI 53 | FASE 11: Deployment dan Serah Terima | P11-04, P11-05
+========================================================================
+Cadangan, pemulihan, panduan
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 52/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P11-04 Cadangan dan pemulihan; P11-05 Panduan dan pelatihan.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §14.3, §14.8, NF6, NF7.
+4. Task P11-04, P11-05 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Cadangan dan uji pemulihan, dua panduan satu halaman, uji kemudahan.
+
+CATATAN KHUSUS:
+- Uji pemulihan ke proyek kosong wajib.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P11-04, P11-05) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P11-04, P11-05 terpenuhi.
+
+GATE:
+Jalankan G1 dan G3 (npm run db:reset && npm run db:test, atau npm run db:test:pg bila Docker tidak ada). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Baca dua panduan satu halaman.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+========================================================================
+LANGKAH PEMILIK 6: JALAN PARALEL DUA MINGGU
+========================================================================
+1. Selama dua minggu, catat setiap pesanan di sistem dan di buku lama. Lakukan opname mingguan.
+2. Bandingkan jumlah pesanan dan hasil opname di akhir minggu kedua. Putuskan bersama tim kapan berhenti memakai buku.
+3. Setelah keputusan, lanjut ke Prompt 53.
+
+========================================================================
+PROMPT 53 DARI 53 | FASE 11: Deployment dan Serah Terima | P11-06
+========================================================================
+Jalan paralel dan go-live
+
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PROMPT 53/53]
+
+Kamu bekerja pada sistem SCM internal Determined Studio (konveksi kaos sablon, kemeja korsa, PDH, PDL). Kerjakan: P11-06 Jalan paralel dan go-live.
+
+BACA DULU, BERURUTAN:
+1. AGENTS.md.
+2. docs/PROJECT_PLAN.md bagian 0 (protokol), 1 (status), lima entri terakhir Lampiran D, dan Lampiran E (Ledger Prompt).
+3. Bagian plan khusus prompt ini: §14.7.
+4. Task P11-06 di bagian 15 (baca "Kerjakan" dan "Selesai jika" masing-masing).
+
+CEK LEDGER:
+Lihat Lampiran E. Bila prompt sebelumnya belum berstatus DISETUJUI dan pesan ini tidak diawali /1allclear, berhenti dan tanyakan kepada pemilik. Bila pesan diawali /1allclear, tandai prompt sebelumnya DISETUJUI, lalu lanjut.
+
+FOKUS:
+Jalan paralel dua minggu, kriteria berhenti memakai buku, serah terima.
+
+CATATAN KHUSUS:
+- Pastikan LANGKAH PEMILIK 6 dilakukan.
+
+KERJAKAN:
+Ikuti butir "Kerjakan" tiap task (P11-06) di bagian 15. Jangan memperluas ruang lingkup. Bila plan ambigu, ambil default di bagian 18, catat asumsinya di Lampiran D, lanjutkan.
+
+SELESAI JIKA:
+Seluruh butir "Selesai jika" task P11-06 terpenuhi.
+
+GATE:
+Jalankan G1 dan G2 (G1 ditambah npm run build). Jangan mencentang task bila gate gagal.
+
+ATURAN KERAS (ringkas, selengkapnya bagian 0.2):
+- Jangan mengarang data usaha. Data contoh hanya fiktif berawalan CONTOH.
+- Aturan bisnis hidup di database; klien menulis hanya lewat RPC. Tabel append-only tidak boleh di-UPDATE atau DELETE.
+- Kunci service role tidak pernah masuk bundel klien, repo, atau log.
+- Warna hanya dari token; teks putih dilarang di atas fill warna dasar 500; proporsi 20/40/40.
+- Filter antislop (v3.2.32 di .agents/skills/ dan AGENTS.md, §7.13): terapkan pada setiap pekerjaan UI, copy, aksesibilitas, tata letak mobile, dan komentar kode (mode during + Delivery Gate PASS/FAIL bersama G5); bila bentrok, §0.2 dan §7 menang.
+- Laporkan hanya hasil yang benar-benar dijalankan; yang belum dijalankan tulis "belum diuji".
+
+PENUTUP (bagian 0.4): jalankan gate; centang task di bagian 15 hanya bila lulus; perbarui bagian 1 (STATUS); tulis entri baru di Lampiran D memakai template Lampiran C; ubah baris prompt ini di Lampiran E menjadi MENUNGGU; commit dengan format tipe(P?-??): ringkasan.
+
+LAPORAN (bagian 0.6): Prompt NN percobaan ke-k | Status | tiap kriteria Selesai jika LULUS atau GAGAL | hasil gate | file diubah | Cek manual untuk pemilik (3 sampai 5 langkah) | asumsi dan masalah.
+>>> AKHIR PROMPT <<<
+
+CEK MANUAL UNTUK PEMILIK (setelah agent melapor):
+- Isi formulir serah terima akses.
+
+Bila puas, awali prompt berikutnya dengan /1allclear.
+
+
+========================================================================
+PROMPT KHUSUS A: PERBAIKAN (gate gagal, kriteria gagal, atau cacat)
+========================================================================
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - PERBAIKAN]
+Baca AGENTS.md, docs/PROJECT_PLAN.md bagian 0 dan 1, lima entri terakhir Lampiran D.
+Masalah: <TULIS GEJALA: apa yang dilakukan, apa yang diharapkan, apa yang terjadi, pesan galat lengkap>.
+Langkah:
+1. Tulis ulang gejala dengan kata-katamu dan sebut task atau fitur yang terkait.
+2. Cari penyebab akar. Jelaskan dalam tiga kalimat SEBELUM mengubah kode.
+3. Tulis uji yang gagal lebih dulu, lalu perbaiki, lalu pastikan uji itu lulus.
+4. Jalankan seluruh gate relevan. Laporkan bila ada uji lain yang berubah.
+5. Catat di Lampiran D: tanggal, gejala, penyebab, perbaikan, uji.
+Batasan: jangan melemahkan RLS, grant, atau uji demi menghilangkan galat. Jangan mengedit migrasi yang sudah dipush; buat migrasi baru.
+>>> AKHIR PROMPT <<<
+
+========================================================================
+PROMPT KHUSUS B: LANJUTKAN SETELAH KUOTA HABIS ATAU SESI PUTUS
+========================================================================
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - LANJUTKAN]
+Baca AGENTS.md, docs/PROJECT_PLAN.md bagian 0, bagian 1, dan entri terakhir Lampiran D (status WIP bila ada).
+1. Jalankan git status dan git log -5. Bandingkan dengan entri WIP.
+2. Tentukan task yang sedang dikerjakan dan butir "Selesai jika" yang sudah terpenuhi (periksa, jangan asumsi).
+3. Lanjutkan dari titik berhenti tanpa mengulang pekerjaan yang sudah benar.
+4. Tutup dengan prosedur bagian 0.4 dan laporan bagian 0.6.
+>>> AKHIR PROMPT <<<
+
+========================================================================
+PROMPT KHUSUS C: BUILD ATAU GATE RUSAK
+========================================================================
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - BUILD RUSAK]
+Baca AGENTS.md dan docs/PROJECT_PLAN.md bagian 0.
+Jalankan gate yang gagal dan tempel keluaran galat lengkap. Identifikasi commit terakhir yang hijau (git log, git bisect bila perlu). Perbaiki penyebab akarnya, bukan gejalanya. Jangan menonaktifkan aturan lint, tipe strict, atau uji. Ulangi gate sampai hijau, lalu catat di Lampiran D.
+>>> AKHIR PROMPT <<<
+
+========================================================================
+PROMPT KHUSUS D: STATUS DAN AUDIT POSISI (tanpa mengubah kode)
+========================================================================
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - STATUS]
+Baca AGENTS.md dan docs/PROJECT_PLAN.md bagian 1, bagian 15 (centang), Lampiran D, dan Lampiran E.
+Tanpa mengubah kode: (1) ringkas posisi sekarang (fase, prompt, task); (2) cocokkan centang task dengan keadaan repositori dan sebutkan ketidakcocokan; (3) daftar blocker; (4) daftar langkah pemilik yang menunggu; (5) rekomendasi prompt berikutnya. Jangan memperbarui berkas apa pun kecuali bagian 1 bila terbukti usang.
+>>> AKHIR PROMPT <<<
+
+========================================================================
+PROMPT KHUSUS E: PEMERIKSAAN KEAMANAN SEBELUM RILIS
+========================================================================
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - KEAMANAN]
+Baca docs/PROJECT_PLAN.md bagian 0.2, bagian 10, Lampiran F.
+Tanpa menambah fitur, periksa dan laporkan: (1) grep rahasia di repositori dan riwayat commit; (2) service role tidak ada di bundel klien (.next); (3) RLS aktif pada semua tabel dan hasil uji matriks izin ulang (anon, produksi, admin, pemilik, nonaktif, tanpa peran); (4) tidak ada fungsi public yang dapat dieksekusi anon; (5) header keamanan dan CSP; (6) npm audit --omit=dev; (7) tabel append-only tidak dapat diubah; (8) produksi tidak membaca harga atau kontak di layar maupun API. Keluarkan daftar temuan berat, sedang, ringan. Jangan memperbaiki sebelum saya menyetujui daftarnya.
+>>> AKHIR PROMPT <<<
+
+========================================================================
+PROMPT KHUSUS F: UKUR ULANG PROPORSI WARNA 20/40/40
+========================================================================
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - WARNA]
+Baca docs/PROJECT_PLAN.md bagian 7.
+Ambil tangkapan layar lima layar (/pesanan, /pesanan/[id], /produksi, /stok, /dasbor) pada 1366x768 dan 390x844 dengan data contoh, jalankan npm run check:contrast dan npm run check:color-share, lalu laporkan angka steel, violet, orchid per layar dan rata-rata. Bila di luar toleransi 10 poin, atur PEMAKAIAN warna (luas pita, fill aksen) tanpa mengubah warna dasar #A678B9, #8CA9BC, #8B7CC7. Pastikan teks putih tidak ada di atas fill warna dasar 500.
+>>> AKHIR PROMPT <<<
+
+========================================================================
+PROMPT KHUSUS G: AUDIT ANTI-SLOP (MODE AFTER)
+========================================================================
+>>> SALIN DARI SINI <<<
+[DETERMINED SCM - AUDIT ANTI-SLOP]
+Gunakan antislop mode after untuk sesi ini.
+Baca AGENTS.md, docs/PROJECT_PLAN.md bagian 0.2 dan bagian 7 (termasuk §7.13), lalu baca skill lokal di .agents/skills/antislop/SKILL.md beserta skill terkait (antislop-ui, antislop-copywriting, antislop-human, antislop-layoutmobile, antislop-code).
+Target audit: <TULIS RUTE ATAU KOMPONEN YANG INGIN DIAUDIT, mis. app/(app)/pesanan dan components/ui>.
+Langkah:
+1. Lakukan audit tanpa mengubah berkas terlebih dahulu.
+2. Keluarkan daftar temuan bernomor beserta prioritasnya (UI/visual, copy/label, aksesibilitas/kontras, tata letak 360 px, komentar kode) dan pastikan tidak bertentangan dengan PROJECT_PLAN.md §7.
+3. Tunggu persetujuan saya memilih nomor temuan yang akan diperbaiki sebelum menyunting kode.
+4. Setelah perbaikan disetujui dan selesai, jalankan G1 dan G5 serta keluarkan laporan Delivery Gate (PASS/FAIL) dan catat ringkasannya di Lampiran D.
+>>> AKHIR PROMPT <<<

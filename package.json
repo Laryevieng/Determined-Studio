@@ -1,0 +1,40 @@
+{
+  "name": "proyek-scm",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "node -e \"console.log('test:e2e belum tersedia')\"",
+    "test:a11y": "node -e \"console.log('test:a11y belum tersedia')\"",
+    "check:contrast": "node -e \"console.log('check:contrast belum tersedia')\"",
+    "check:color-share": "node -e \"console.log('check:color-share belum tersedia')\"",
+    "db:reset": "node -e \"console.log('db:reset belum tersedia')\"",
+    "db:test": "node -e \"console.log('db:test belum tersedia')\"",
+    "db:test:pg": "node -e \"console.log('db:test:pg belum tersedia')\"",
+    "db:types": "node -e \"console.log('db:types belum tersedia')\"",
+    "db:push": "node -e \"console.log('db:push belum tersedia')\"",
+    "backup": "node -e \"console.log('backup belum tersedia')\""
+  },
+  "dependencies": {
+    "next": "16.4.3",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/turbopack": "^4",
+    "@types/node": "^22.20.7",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.3",
+    "prettier": "^3.10.1",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vitest": "^5.1.2"
+  }
+}
