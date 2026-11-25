@@ -91,13 +91,13 @@ Pemilik menyetujui hasil sebuah prompt dengan mengawali prompt berikutnya `/1all
 | Item | Nilai |
 |---|---|
 | Fase aktif | Fase 0 |
-| Prompt aktif | 02 / 53 |
-| Task berikutnya | P0-03 (verifikasi CI di GitHub setelah push), lalu P0-04, P0-05, P0-06 (Prompt 03) |
-| Terakhir diperbarui | 26 November 2026 (Prompt 02: P0-02 selesai, P0-03 selesai lokal) |
-| Blocker | Remote GitHub (`origin`) belum terhubung sehingga alur GitHub Actions (`.github/workflows/ci.yml`) belum dapat dijalankan di server GitHub |
-| Langkah pemilik yang menunggu | Hubungkan remote GitHub dan `git push` untuk memverifikasi CI hijau pada commit awal (opsional sebelum Prompt 03); LANGKAH PEMILIK 1 (project Supabase DEV), sebelum Prompt 08 |
+| Prompt aktif | 02 / 53 (selesai, menunggu `/1allclear`) |
+| Task berikutnya | P0-04, P0-05, P0-06 (Prompt 03) |
+| Terakhir diperbarui | 26 November 2026 (Prompt 02 selesai penuh; CI GitHub Actions hijau) |
+| Blocker | Tidak ada |
+| Langkah pemilik yang menunggu | LANGKAH PEMILIK 1 (project Supabase DEV), sebelum Prompt 08 |
 
-Ringkasan: Prompt 01 (`P0-01`) disetujui lewat `/1allclear`. `P0-02` selesai (struktur folder §3.3, `docs/PROJECT_PLAN.md`, `AGENTS.md`, skrip npm §3.4, Git lokal diinisialisasi). `P0-03` selesai lokal (Prettier, Vitest + 1 uji contoh, `.github/workflows/ci.yml`, `.gitignore`, G1 dan G2 lulus); task `P0-03` belum dicentang karena CI GitHub Actions belum dijalankan di remote GitHub.
+Ringkasan: Prompt 01 (`P0-01`) disetujui lewat `/1allclear`. `P0-02` dan `P0-03` selesai dan dicentang; repositori terhubung ke `https://github.com/Laryevieng/Determined-Studio.git` dengan G1, G2, dan GitHub Actions CI hijau (run `45664511919`). Siap lanjut ke Prompt 03 setelah `/1allclear`.
 
 ---
 
@@ -2460,7 +2460,7 @@ Ukuran: S, M, L (§0.5). "Bergantung" menyebut task yang harus selesai lebih dul
     - Struktur folder sesuai §3.3.
     - `AGENTS.md` (termasuk blok pointer `antislop`), `.agents/skills/`, dan `docs/PROJECT_PLAN.md` ada.
 
-- [ ] **P0-03 Lint, tipe, uji, dan CI** (ukuran M; bergantung: P0-02)
+- [x] **P0-03 Lint, tipe, uji, dan CI** (ukuran M; bergantung: P0-02)
   - Kerjakan:
     - Pasang Prettier, konfigurasi ESLint (pertahankan pengecualian `anti-slop/**` dan `.agents/**` di `globalIgnores`), Vitest dengan satu uji contoh, dan struktur `tests/unit`.
     - Buat GitHub Actions: `lint`, `typecheck`, `test` pada setiap push dan pull request (G1).
@@ -3241,14 +3241,14 @@ Jenis: **E** = exception (pesan dimulai kode), **R** = hasil `ok:false` (`code` 
 - Cek manual untuk pemilik: (1) Buka `PROJECT_PLAN.md` §3.1 dan pastikan tidak ada baris bertuliskan `(isi)`; (2) Periksa daftar 6 selisih lingkungan di Lampiran D; (3) Putuskan apakah ingin menjalankan `git init` sebelum Prompt 02 dan apakah mempertahankan `@tailwindcss/turbopack` (dicatat di §4 pada P0-02) atau beralih ke `@tailwindcss/postcss`; (4) Siapkan pemasangan Docker Desktop atau PostgreSQL 16 lokal bila ingin menjalankan uji SQL lokal G3 sebelum Fase 2 (Prompt 08).
 - Langkah berikutnya: Setelah pemilik menyetujui hasil audit dengan `/1allclear` (dan menginisialisasi Git atau mengizinkan inisialisasi di awal Prompt 02), lanjut ke Prompt 02 (`P0-02`, `P0-03`).
 
-### [2026-11-26 00:15] Prompt 02 | Task: P0-02, P0-03 | Status: SEBAGIAN
-- Dikerjakan: (P0-02) Membuat seluruh struktur folder §3.3 dengan `.gitkeep` pada folder kosong, memindahkan `PROJECT_PLAN.md` ke `docs/PROJECT_PLAN.md`, memperbarui `AGENTS.md` (ringkasan §0.2, peta dokumen, perintah & gate sambil mempertahankan blok pointer `<!-- antislop:start/end -->` dan `.agents/skills/`), menambahkan seluruh skrip npm §3.4 di `package.json` (skrip yang belum aktif mencetak `belum tersedia`), serta menginisialisasi repositori Git lokal. (P0-03) Memasang `prettier@3.10.1`, `vitest@5.1.2`, dan `@types/node@22.20.7` (whitelist §3.2), menyiapkan `.prettierrc`, `.prettierignore`, `vitest.config.mts`, uji contoh `tests/unit/smoke.test.ts`, alur CI `.github/workflows/ci.yml` (Gate G1), serta memperbarui `.gitignore` (`!.env.example`, `/tests/e2e/__shots__/`, `/anti-slop/`).
-- Gate: G1 LULUS (`npm run lint`: 0 error/warning; `npm run typecheck`: 0 error; `npm run test`: 1/1 test lulus tanpa peringatan; `npx prettier --check` pada berkas baru lulus). G2 LULUS (`npm run build` lulus untuk rute `/` dan `/_not-found`; catatan: Next.js 16.4.3 sempat berhenti sekali menampilkan pengingat penasihat keamanan dan lulus pada percobaan berikutnya). `npm run dev` diverifikasi di `http://localhost:3000` (HTTP 200, judul `Create Next App`). Alur CI di GitHub Actions: belum diuji karena remote GitHub (`origin`) belum terhubung.
+### [2026-11-26 00:25] Prompt 02 | Task: P0-02, P0-03 | Status: SELESAI
+- Dikerjakan: (P0-02) Membuat seluruh struktur folder §3.3 dengan `.gitkeep` pada folder kosong, memindahkan `PROJECT_PLAN.md` ke `docs/PROJECT_PLAN.md`, memperbarui `AGENTS.md` (ringkasan §0.2, peta dokumen, perintah & gate sambil mempertahankan blok pointer `<!-- antislop:start/end -->` dan `.agents/skills/`), menambahkan seluruh skrip npm §3.4 di `package.json` (skrip yang belum aktif mencetak `belum tersedia`), serta menginisialisasi repositori Git lokal dan mendorong ke `https://github.com/Laryevieng/Determined-Studio.git` (`main`). (P0-03) Memasang `prettier@3.10.1`, `vitest@5.1.2`, dan `@types/node@22.20.7` (whitelist §3.2), menyiapkan `.prettierrc`, `.prettierignore`, `vitest.config.mts`, uji contoh `tests/unit/smoke.test.ts`, alur CI `.github/workflows/ci.yml` (Gate G1), memperbarui `.gitignore` (`!.env.example`, `/tests/e2e/__shots__/`, `/anti-slop/`), serta memperbaiki skrip `typecheck` menjadi `next typegen && tsc --noEmit` (`089e16c`) setelah CI awal (`9bb839b`, run `45664012023`) gagal di langkah Typecheck karena tipe rute `.next/types` belum dibangkitkan pada runner bersih.
+- Gate: G1 LULUS (`npm run lint`: 0 error/warning; `npm run typecheck`: `next typegen && tsc --noEmit` 0 error; `npm run test`: 1/1 test lulus; `npx prettier --check` lulus). G2 LULUS (`npm run build` lulus untuk rute `/` dan `/_not-found`; catatan: Next.js 16.4.3 sempat berhenti sekali menampilkan pengingat penasihat keamanan dan lulus pada percobaan berikutnya). `npm run dev` diverifikasi di `http://localhost:3000` (HTTP 200, judul `Create Next App`). GitHub Actions CI LULUS hijau (`conclusion: success`, run `45664511919` pada commit `089e16c`).
 - File utama: `package.json`, `package-lock.json`, `AGENTS.md`, `.gitignore`, `.prettierrc`, `.prettierignore`, `vitest.config.mts`, `tests/unit/smoke.test.ts`, `.github/workflows/ci.yml`, `docs/PROJECT_PLAN.md`, struktur folder §3.3 (`app/`, `components/`, `lib/`, `supabase/`, `scripts/`, `tests/`).
 - Keputusan atau asumsi baru: D-30 (pertahankan `@tailwindcss/turbopack` bawaan `create-next-app@16.4.3` dan perbarui `@types/node` ke `^22` untuk peer dependency `vitest@5.1.2`).
-- Hasil ukur: `npm run test` 1/1 lulus (511 ms); `npm run build` kompilasi 2,4 s + TypeScript 5,7 s; `http://localhost:3000` HTTP 200 (16.180 byte). GitHub Actions CI: belum diuji.
-- Cek manual untuk pemilik: (1) Buka `http://localhost:3000` dan pastikan halaman awal Next.js tampil; (2) Periksa `AGENTS.md`, `.agents/skills/`, dan `docs/PROJECT_PLAN.md` sudah berada di tempatnya; (3) Jalankan `npm run lint && npm run typecheck && npm run test` lokal untuk memastikan G1 hijau; (4) Hubungkan repositori ke GitHub (`git remote add origin ... && git push -u origin main`) lalu cek tab Actions untuk memastikan CI berjalan hijau pada commit awal.
-- Langkah berikutnya: Hubungkan remote GitHub untuk memverifikasi CI hijau (`P0-03`), lalu awali Prompt 03 (`P0-04`, `P0-05`, `P0-06`) dengan `/1allclear`.
+- Hasil ukur: `npm run test` 1/1 lulus (874 ms); `npm run build` kompilasi 2,4 s + TypeScript 5,7 s; `http://localhost:3000` HTTP 200 (16.180 byte); GitHub Actions CI run `45664511919` lulus penuh (`Lint`, `Typecheck`, `Unit test`).
+- Cek manual untuk pemilik: (1) Buka `https://github.com/Laryevieng/Determined-Studio/actions` dan pastikan alur CI berwarna hijau; (2) Buka `http://localhost:3000` dan pastikan halaman awal Next.js tampil normal; (3) Periksa `AGENTS.md`, `.agents/skills/`, dan `docs/PROJECT_PLAN.md` sudah utuh; (4) Awali Prompt 03 (`P0-04`, `P0-05`, `P0-06`) dengan `/1allclear`.
+- Langkah berikutnya: Awali Prompt 03 (`P0-04`, `P0-05`, `P0-06`) dengan `/1allclear`.
 
 ---
 
@@ -3259,7 +3259,7 @@ Status: `BELUM`, `MENUNGGU` (agent selesai, menunggu pemilik), `DISETUJUI` (pemi
 | No | Fase | Task | Judul | Status | Tanggal | Catatan |
 |---|---|---|---|---|---|---|
 | 01 | 0 | P0-01 | Audit lingkungan | DISETUJUI | 2026-11-26 | Disetujui via `/1allclear`; `.git` dan G1 aktif di P0-02/P0-03 |
-| 02 | 0 | P0-02, P0-03 | Inisialisasi proyek, lint, dan CI | MENUNGGU | 2026-11-26 | P0-02 selesai & dicentang; P0-03 lulus G1+G2 lokal, menunggu push ke GitHub untuk verifikasi CI Actions |
+| 02 | 0 | P0-02, P0-03 | Inisialisasi proyek, lint, dan CI | MENUNGGU | 2026-11-26 | P0-02 & P0-03 selesai dan dicentang; G1, G2, dan CI GitHub Actions hijau (run `45664511919`) |
 | 03 | 0 | P0-04, P0-05, P0-06 | Env, halaman dasar, utilitas format | BELUM | | |
 | 04 | 1 | P1-01, P1-02 | Token warna 20/40/40 dan skrip uji | BELUM | | |
 | 05 | 1 | P1-03 | Komponen dasar | BELUM | | |
