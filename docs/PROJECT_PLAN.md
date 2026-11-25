@@ -90,14 +90,14 @@ Pemilik menyetujui hasil sebuah prompt dengan mengawali prompt berikutnya `/1all
 
 | Item | Nilai |
 |---|---|
-| Fase aktif | Fase 0 |
-| Prompt aktif | 02 / 53 (selesai, menunggu `/1allclear`) |
-| Task berikutnya | P0-04, P0-05, P0-06 (Prompt 03) |
-| Terakhir diperbarui | 26 November 2026 (Prompt 02 selesai penuh; CI GitHub Actions hijau) |
+| Fase aktif | Fase 0 (selesai, menunggu Gerbang Fase 0 dan `/1allclear` untuk masuk Fase 1) |
+| Prompt aktif | 03 / 53 (selesai, menunggu `/1allclear`) |
+| Task berikutnya | P1-01, P1-02 (Prompt 04, Fase 1: Design System) |
+| Terakhir diperbarui | 26 November 2026 (Prompt 03: P0-04, P0-05, P0-06 selesai) |
 | Blocker | Tidak ada |
-| Langkah pemilik yang menunggu | LANGKAH PEMILIK 1 (project Supabase DEV), sebelum Prompt 08 |
+| Langkah pemilik yang menunggu | Verifikasi Gerbang Fase 0 (`/api/health`, 404, uji format) sebelum Prompt 04; LANGKAH PEMILIK 1 (project Supabase DEV), sebelum Prompt 08 |
 
-Ringkasan: Prompt 01 (`P0-01`) disetujui lewat `/1allclear`. `P0-02` dan `P0-03` selesai dan dicentang; repositori terhubung ke `https://github.com/Laryevieng/Determined-Studio.git` dengan G1, G2, dan GitHub Actions CI hijau (run `45664511919`). Siap lanjut ke Prompt 03 setelah `/1allclear`.
+Ringkasan: Seluruh task Fase 0 (`P0-01` sampai `P0-06`) selesai dan dicentang. `.env.example`, validasi `lib/env.ts` (`server-only`), `/api/health`, `not-found.tsx`, `error.tsx`, `lang="id"`, `robots: noindex`, `lib/format.ts`, `lib/messages.ts`, dan `lib/errors.ts` (49 kode Lampiran A) lulus G1 (13/13 tes) dan G2 (`npm run build`). Siap masuk Fase 1 setelah `/1allclear`.
 
 ---
 
@@ -162,7 +162,7 @@ Versi terbaru di npm per 4 November 2026 hanya rujukan. Versi yang dipakai adala
 | tailwindcss, @tailwindcss/postcss | 4.x | 4.3.4 | `tailwindcss` `^4` (`4.3.3`); `@tailwindcss/postcss` belum terpasang, diganti `@tailwindcss/turbopack` `^4` (`4.3.3`) di `package.json` & `next.config.ts` |
 | @supabase/supabase-js | 2.x | 2.118.0 | Belum terpasang |
 | @supabase/ssr | 0.x | 0.12.7 | Belum terpasang |
-| zod | 4.x | 4.6.7 | Belum dideklarasikan di `package.json` (ada transitif `4.6.7` di `node_modules`) |
+| zod | 4.x | 4.6.7 | `4.6.7` (terpasang di `package.json` bersama `server-only@0.0.1` pada P0-04) |
 | react-hook-form, @hookform/resolvers | 7.x | 7.91.0, 7.0.2 | Belum terpasang |
 | vitest | versi stabil terbaru | 5.1.0 | `5.1.2` (terpasang di P0-03 bersama `prettier@3.10.1` dan `@types/node@22.20.7`) |
 | @playwright/test, @axe-core/playwright | stabil | 1.64.1, 4.14.0 | Belum terpasang |
@@ -2469,7 +2469,7 @@ Ukuran: S, M, L (§0.5). "Bergantung" menyebut task yang harus selesai lebih dul
     - G1 hijau lokal.
     - Alur CI berjalan hijau pada commit awal.
 
-- [ ] **P0-04 Lingkungan dan env** (ukuran S; bergantung: P0-02)
+- [x] **P0-04 Lingkungan dan env** (ukuran S; bergantung: P0-02)
   - Kerjakan:
     - Buat `.env.example` berisi semua variabel §3.5 dengan komentar, tanpa nilai nyata.
     - Buat `lib/env.ts`: skema Zod untuk variabel publik dan variabel server; impor variabel server di kode klien harus gagal saat build (`server-only`).
@@ -2479,7 +2479,7 @@ Ukuran: S, M, L (§0.5). "Bergantung" menyebut task yang harus selesai lebih dul
     - Uji `lib/env.ts` lulus.
     - `grep -r SUPABASE_SECRET_KEY` hanya menemukan `.env.example`, `lib/env.ts`, dan kode server.
 
-- [ ] **P0-05 Halaman dasar dan kesehatan** (ukuran S; bergantung: P0-02)
+- [x] **P0-05 Halaman dasar dan kesehatan** (ukuran S; bergantung: P0-02)
   - Kerjakan:
     - Buat `app/api/health/route.ts` (status ok, waktu; tanpa data rahasia), `app/not-found.tsx`, `app/error.tsx` dengan teks Indonesia yang ramah.
     - Atur `lang="id"`, judul dan deskripsi, `robots: noindex` pada seluruh situs (aplikasi internal).
@@ -2488,7 +2488,7 @@ Ukuran: S, M, L (§0.5). "Bergantung" menyebut task yang harus selesai lebih dul
     - Rute sembarang menampilkan 404 ramah.
     - Seluruh halaman bermeta `noindex`.
 
-- [ ] **P0-06 Utilitas format dan pesan** (ukuran M; bergantung: P0-03)
+- [x] **P0-06 Utilitas format dan pesan** (ukuran M; bergantung: P0-03)
   - Kerjakan:
     - `lib/format.ts`: `rupiah(n)` → `Rp1.500.000`, `meter(n)` → `14,5 m`, tanggal dan jam WIB, angka desimal koma, parser angka Indonesia.
     - `lib/messages.ts`: struktur pesan Indonesia (kosong dulu, diisi bertahap). `lib/errors.ts`: `AppErrorCode`, `mapDbError(message|code, detail?)` memakai tabel Lampiran A.
@@ -3250,6 +3250,15 @@ Jenis: **E** = exception (pesan dimulai kode), **R** = hasil `ok:false` (`code` 
 - Cek manual untuk pemilik: (1) Buka `https://github.com/Laryevieng/Determined-Studio/actions` dan pastikan alur CI berwarna hijau; (2) Buka `http://localhost:3000` dan pastikan halaman awal Next.js tampil normal; (3) Periksa `AGENTS.md`, `.agents/skills/`, dan `docs/PROJECT_PLAN.md` sudah utuh; (4) Awali Prompt 03 (`P0-04`, `P0-05`, `P0-06`) dengan `/1allclear`.
 - Langkah berikutnya: Awali Prompt 03 (`P0-04`, `P0-05`, `P0-06`) dengan `/1allclear`.
 
+### [2026-11-26 00:33] Prompt 03 | Task: P0-04, P0-05, P0-06 | Status: SELESAI
+- Dikerjakan: (P0-04) Memasang `zod@4.6.7` dan `server-only@0.0.1` (whitelist §3.2), membuat `.env.example` (seluruh 6 variabel §3.5 tanpa nilai nyata), `lib/env.public.ts` (skema variabel publik aman untuk klien), `lib/env.ts` (penjaga `server-only` + skema server termasuk `SUPABASE_SECRET_KEY` dan default `SESSION_IDLE_MINUTES=480`, `LOGIN_MAX_ATTEMPTS=8`), dan `tests/unit/env.test.ts`. (P0-05) Membuat `app/api/health/route.ts` (`{status: "ok", timestamp}`, `Cache-Control: no-store`), `app/not-found.tsx`, `app/error.tsx` berbahasa Indonesia dengan target sentuh 48 px, serta memperbarui `app/layout.tsx` (`lang="id"`, judul/deskripsi Determined Studio, `robots: { index: false, follow: false }`). (P0-06) Membuat `lib/format.ts` (`rupiah`, `angka`, `meter`, `tanggalWib`, `tanggalJamWib`, `parseAngkaId`), `lib/messages.ts` (seluruh 49 pesan Lampiran A + `VALIDATION` + `UNKNOWN`), `lib/errors.ts` (`AppErrorCode`, `mapDbError` termasuk prefix exception Postgres dan substitusi ETA `MATERIAL_HOLD`), serta `tests/unit/format.test.ts` dan `tests/unit/errors.test.ts`.
+- Gate: G1 LULUS (`npm run lint`: 0 error/warning; `npm run typecheck`: 0 error; `npm run test`: 4 file, 13/13 tes lulus dalam 1,12 s). G2 LULUS (`npm run build`: rute `/`, `/_not-found`, `/api/health` sukses setelah pengingat penasihat keamanan Next.js 16.4.3). Pemeriksaan keamanan: `grep SUPABASE_SECRET_KEY` hanya muncul di `.env.example`, `lib/env.ts`, `tests/unit/env.test.ts`, dan dokumen; bundel klien `.next/static` memiliki 0 kemunculan `service_role|SUPABASE_SECRET`. Verifikasi HTTP lokal: `/api/health` HTTP 200 JSON ok; `/` HTTP 200 dengan `lang="id"` dan `noindex`; `/rute-tidak-ada-cek-404` HTTP 404 menampilkan "Halaman tidak ditemukan" dan `noindex`. Delivery Gate `antislop` (mode during): PASS pada `app/not-found.tsx`, `app/error.tsx`, `lib/messages.ts`, dan komentar kode.
+- File utama: `.env.example`, `lib/env.public.ts`, `lib/env.ts`, `lib/format.ts`, `lib/messages.ts`, `lib/errors.ts`, `app/api/health/route.ts`, `app/layout.tsx`, `app/not-found.tsx`, `app/error.tsx`, `tests/unit/env.test.ts`, `tests/unit/format.test.ts`, `tests/unit/errors.test.ts`, `package.json`, `package-lock.json`, `docs/PROJECT_PLAN.md`.
+- Keputusan atau asumsi baru: Memisahkan `lib/env.public.ts` (diimpor ulang oleh `lib/env.ts`) agar komponen klien di fase mendatang tetap dapat membaca variabel `NEXT_PUBLIC_*` tanpa melanggar penjaga `server-only` pada `lib/env.ts`.
+- Hasil ukur: 13/13 uji unit lulus (1,12 s); `/api/health` HTTP 200; `/rute-tidak-ada-cek-404` HTTP 404; 0 kebocoran `SUPABASE_SECRET`/`service_role` di `.next/static`.
+- Cek manual untuk pemilik: (1) Buka `http://localhost:3000/api/health` dan pastikan keluar JSON `{ "status": "ok", "timestamp": "..." }`; (2) Buka `http://localhost:3000/rute-acak` dan pastikan tampil halaman 404 ramah berbahasa Indonesia; (3) Periksa sumber halaman (`Ctrl+U`) untuk memastikan `<html lang="id">` dan `<meta name="robots" content="noindex, nofollow"/>`; (4) Jalankan `npm run test` dan pastikan 13 tes lulus (termasuk `Rp1.500.000`, `14,5 m`, dan 49 kode Lampiran A).
+- Langkah berikutnya: Periksa Gerbang Fase 0, lalu awali Prompt 04 (`P1-01`, `P1-02`, Fase 1 Design System) dengan `/1allclear`.
+
 ---
 
 ## LAMPIRAN E. LEDGER PROMPT
@@ -3259,8 +3268,8 @@ Status: `BELUM`, `MENUNGGU` (agent selesai, menunggu pemilik), `DISETUJUI` (pemi
 | No | Fase | Task | Judul | Status | Tanggal | Catatan |
 |---|---|---|---|---|---|---|
 | 01 | 0 | P0-01 | Audit lingkungan | DISETUJUI | 2026-11-26 | Disetujui via `/1allclear`; `.git` dan G1 aktif di P0-02/P0-03 |
-| 02 | 0 | P0-02, P0-03 | Inisialisasi proyek, lint, dan CI | MENUNGGU | 2026-11-26 | P0-02 & P0-03 selesai dan dicentang; G1, G2, dan CI GitHub Actions hijau (run `45664511919`) |
-| 03 | 0 | P0-04, P0-05, P0-06 | Env, halaman dasar, utilitas format | BELUM | | |
+| 02 | 0 | P0-02, P0-03 | Inisialisasi proyek, lint, dan CI | DISETUJUI | 2026-11-26 | Disetujui via `/1allclear`; CI GitHub Actions hijau (run `45664511919`) |
+| 03 | 0 | P0-04, P0-05, P0-06 | Env, halaman dasar, utilitas format | MENUNGGU | 2026-11-26 | P0-04, P0-05, P0-06 selesai & dicentang; G1 (13/13 tes) & G2 lulus; Fase 0 siap melewati Gerbang Fase 0 |
 | 04 | 1 | P1-01, P1-02 | Token warna 20/40/40 dan skrip uji | BELUM | | |
 | 05 | 1 | P1-03 | Komponen dasar | BELUM | | |
 | 06 | 1 | P1-04 | Komponen data | BELUM | | |
