@@ -1,0 +1,8 @@
+.next/
+node_modules/
+anti-slop/
+.agents/
+package-lock.json
+docs/PROJECT_PLAN.md
+prompting-struktur.txt
+tests/e2e/__shots__/
